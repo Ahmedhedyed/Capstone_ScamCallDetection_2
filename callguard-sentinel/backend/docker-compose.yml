@@ -1,0 +1,215 @@
+version: "3.9"
+
+services:
+  api-gateway:
+    build: .
+    container_name: callguard-api-gateway
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    env_file:
+      - env.example
+    depends_on:
+      - db
+      - audio-service
+      - transcription-service
+      - feature-service
+      - analysis-service
+      - alerting-service
+
+  audio-service:
+    build: .
+    container_name: callguard-audio
+    command: uvicorn audio_app:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    env_file:
+      - env.example
+
+  transcription-service:
+    build: .
+    container_name: callguard-transcription
+    command: uvicorn transcription_app:app --host 0.0.0.0 --port 8002
+    ports:
+      - "8002:8002"
+    env_file:
+      - env.example
+
+  feature-service:
+    build: .
+    container_name: callguard-feature
+    command: uvicorn feature_app:app --host 0.0.0.0 --port 8003
+    ports:
+      - "8003:8003"
+    env_file:
+      - env.example
+
+  analysis-service:
+    build: .
+    container_name: callguard-analysis
+    command: uvicorn analysis_app:app --host 0.0.0.0 --port 8004
+    ports:
+      - "8004:8004"
+    env_file:
+      - env.example
+
+  alerting-service:
+    build: .
+    container_name: callguard-alerting
+    command: uvicorn alerting_app:app --host 0.0.0.0 --port 8005
+    ports:
+      - "8005:8005"
+    env_file:
+      - env.example
+
+  db:
+    image: postgres:15
+    container_name: callguard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: callguard
+      POSTGRES_USER: callguard_user
+      POSTGRES_PASSWORD: callguard_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+
+
+# version: '3.8'
+
+# services:
+#   # PostgreSQL Database
+#   postgres:
+#     image: postgres:15
+#     environment:
+#       POSTGRES_DB: callguard
+#       POSTGRES_USER: user
+#       POSTGRES_PASSWORD: password
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U user -d callguard"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+
+#   # Redis for caching and queues
+#   redis:
+#     image: redis:7-alpine
+#     ports:
+#       - "6379:6379"
+#     volumes:
+#       - redis_data:/data
+#     healthcheck:
+#       test: ["CMD", "redis-cli", "ping"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+
+#   # Main API Service
+#   api:
+#     build: .
+#     ports:
+#       - "8000:8000"
+#     environment:
+#       - DATABASE_URL=postgresql://user:password@postgres:5432/callguard
+#       - REDIS_URL=redis://redis:6379
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#       redis:
+#         condition: service_healthy
+#     volumes:
+#       - ./models:/app/models
+#       - ./logs:/app/logs
+#     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+#   # Audio Ingestion Service
+#   audio-service:
+#     build: .
+#     ports:
+#       - "8001:8001"
+#     environment:
+#       - DATABASE_URL=postgresql://user:password@postgres:5432/callguard
+#       - REDIS_URL=redis://redis:6379
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#       redis:
+#         condition: service_healthy
+#     command: python -m services.audio_ingestion
+
+#   # Transcription Service
+#   transcription-service:
+#     build: .
+#     ports:
+#       - "8002:8002"
+#     environment:
+#       - DATABASE_URL=postgresql://user:password@postgres:5432/callguard
+#       - REDIS_URL=redis://redis:6379
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#       redis:
+#         condition: service_healthy
+#     volumes:
+#       - ./models:/app/models
+#     command: python -m services.transcription
+
+#   # Feature Extraction Service
+#   feature-service:
+#     build: .
+#     ports:
+#       - "8003:8003"
+#     environment:
+#       - DATABASE_URL=postgresql://user:password@postgres:5432/callguard
+#       - REDIS_URL=redis://redis:6379
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#       redis:
+#         condition: service_healthy
+#     command: python -m services.feature_extraction
+
+#   # Analysis Service
+#   analysis-service:
+#     build: .
+#     ports:
+#       - "8004:8004"
+#     environment:
+#       - DATABASE_URL=postgresql://user:password@postgres:5432/callguard
+#       - REDIS_URL=redis://redis:6379
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#       redis:
+#         condition: service_healthy
+#     volumes:
+#       - ./models:/app/models
+#     command: python -m services.analysis
+
+#   # Alerting Service
+#   alerting-service:
+#     build: .
+#     ports:
+#       - "8005:8005"
+#     environment:
+#       - DATABASE_URL=postgresql://user:password@postgres:5432/callguard
+#       - REDIS_URL=redis://redis:6379
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#       redis:
+#         condition: service_healthy
+#     command: python -m services.alerting
+
+# volumes:
+#   postgres_data:
+#   redis_data:

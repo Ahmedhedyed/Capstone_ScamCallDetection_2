@@ -1,0 +1,50 @@
+# For audio manipulation and real-time processing
+pydub>=0.25.1
+SpeechRecognition>=3.10.0
+sounddevice>=0.4.6
+numpy>=1.21.0
+
+# For speech-to-text (Whisper)
+faster-whisper>=0.10.0
+openai-whisper>=20231117
+
+# For speaker diarization
+pyannote.audio>=3.1.1
+
+# For audio analysis
+librosa>=0.10.1
+scipy>=1.9.0
+
+# For NLP and text feature extraction
+nltk>=3.8.1
+spacy>=3.7.0
+scikit-learn>=1.3.0
+pandas>=1.5.0
+
+# For ML model training and evaluation
+joblib>=1.3.0
+matplotlib>=3.6.0
+
+# For real-time processing
+# threading, queue, time, datetime are built-in Python modules
+
+# For production deployment
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# It's recommended to install the following for spacy
+# python -m spacy download en_core_web_sm
+
+# (Keep all your existing libraries like spacy, faster-whisper, etc.)
+
+# For creating the web server
+fastapi
+
+# For running the server
+uvicorn
+
+# For handling file uploads
+python-multipart
+
+# For asynchronous file operations
+aiofiles
