@@ -55,6 +55,19 @@ except Exception as e:
 print("✓ AI model initialization complete.")
 
 
+# --- Health Check Endpoint ---
+@app.get("/health")
+async def health_check():
+    """Simple health check endpoint for the frontend to confirm the backend is live."""
+    return {
+        "status": "ok",
+        "models": {
+            "transcriber": TRANSCRIBER is not None,
+            "text_extractor": TEXT_EXTRACTOR is not None,
+            "master_model": INITIAL_MODEL is not None,
+            "llm_verifier": LLM_VERIFIER is not None,
+        }
+    }
 
 
 # --- 2. OPTIMIZED Core Analysis Function (for /analyze/fast/) ---

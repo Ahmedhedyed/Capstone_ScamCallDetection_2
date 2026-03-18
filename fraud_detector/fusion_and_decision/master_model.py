@@ -15,14 +15,17 @@ class MasterModel:
         self.TEXT_WEIGHT = 0.7
         self.AUDIO_WEIGHT = 0.3
         
-        # Individual feature weights for calculating the base score
+        # Individual feature weights for calculating the base score.
+        # Weights must sum to 1.0 for a well-calibrated base score.
         self.TEXT_FEATURE_WEIGHTS = {
             "authority": 0.15,
-            "urgency": 0.20,
-            "threats": 0.25,
-            "pii_requests": 0.25,
+            "urgency": 0.18,
+            "threats": 0.23,
+            "pii_requests": 0.23,
             "scam_lexicon": 0.10,
             "action_demands": 0.05,
+            # Repetition of pressure phrases is a known social engineering tactic
+            "repetition": 0.06,
         }
         
         print("✓ Hybrid MasterModel initialized.")

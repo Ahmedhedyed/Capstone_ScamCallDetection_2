@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Phone, Shield, AlertTriangle, CheckCircle, Upload } from "lucide-react";
@@ -22,11 +22,7 @@ const Contacts = () => {
   const [loading, setLoading] = useState(true);
   const { supported, pick, loading: picking } = useContactPicker();
 
-  useEffect(() => {
-    loadContacts();
-  }, []);
-
-  const loadContacts = async () => {
+  const loadContacts = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -47,7 +43,11 @@ const Contacts = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    loadContacts();
+  }, [loadContacts]);
 
   const importFromDevice = async () => {
     const picked = await pick();

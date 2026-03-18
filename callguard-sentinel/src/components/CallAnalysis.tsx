@@ -12,20 +12,22 @@ interface AnalysisStatus {
   chunk_number?: number;
   total_chunks?: number;
   text?: string;
-  data?: any;
-  result?: {
-    fraud_score: number;
-    is_fraud: boolean;
-    confidence: string;
-    explanation?: string;
-    features?: Record<string, number>;
-  };
+  data?: Record<string, unknown>;
+  result?: AnalysisResult;
+}
+
+interface AnalysisResult {
+  fraud_score: number;
+  is_fraud: boolean;
+  confidence: string;
+  explanation?: string;
+  features?: Record<string, number>;
 }
 
 interface CallAnalysisProps {
   jobId: string;
-  analysisResult?: any; // Direct result from /analyze/full/ endpoint
-  onAnalysisComplete?: (result: AnalysisStatus['data']['result']) => void;
+  analysisResult?: AnalysisResult; // Direct result from /analyze/fast/ endpoint
+  onAnalysisComplete?: (result: AnalysisResult) => void;
   className?: string;
 }
 

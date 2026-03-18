@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Shield, Phone, AlertTriangle, TrendingUp, Users, Clock } from "lucide-react";
@@ -31,17 +31,11 @@ const Dashboard = () => {
     safe_calls: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [recentCalls, setRecentCalls] = useState<any[]>([]);
+  const [recentCalls, setRecentCalls] = useState<{ time: string; duration: number; scam: number }[]>([]);
   const [riskBreakdown, setRiskBreakdown] = useState<{ name: string; value: number }[]>([]);
-  const [topRiskyContacts, setTopRiskyContacts] = useState<any[]>([]);
+  const [topRiskyContacts, setTopRiskyContacts] = useState<{ id: string; name: string; phone_number: string; scam_risk_level: string; scam_score: number }[]>([]);
 
-  useEffect(() => {
-    loadStats();
-    loadCharts();
-    loadTopContacts();
-  }, []);
-
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -65,9 +59,9 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
-  const loadCharts = async () => {
+  const loadCharts = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -93,7 +87,7 @@ const Dashboard = () => {
         .eq("user_id", user.id);
 
       const counts: Record<string, number> = { safe: 0, warning: 0, critical: 0 };
-      (breakdown || []).forEach((row: any) => {
+      (breakdown || []).forEach((row: { scam_risk_level: string | null }) => {
         const level = row.scam_risk_level || "safe";
         counts[level] = (counts[level] || 0) + 1;
       });
@@ -105,9 +99,9 @@ const Dashboard = () => {
     } catch (e) {
       // ignore chart errors in UI
     }
-  };
+  }, []);
 
-  const loadTopContacts = async () => {
+  const loadTopContacts = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -123,7 +117,13 @@ const Dashboard = () => {
     } catch (e) {
       // ignore
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadStats();
+    loadCharts();
+    loadTopContacts();
+  }, [loadStats, loadCharts, loadTopContacts]);
 
   const statCards = [
     {

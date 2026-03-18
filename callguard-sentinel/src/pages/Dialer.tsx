@@ -10,7 +10,7 @@ import { useScamAlerts } from "@/hooks/useScamAlerts";
 import { ScamAlertContainer } from "@/components/ScamAlert";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { initiateCall, checkBackendHealth } from "@/lib/api";
+import { checkBackendHealth } from "@/lib/api";
 import { toast } from "sonner";
 
 const Dialer = () => {
@@ -28,10 +28,9 @@ const Dialer = () => {
     isSyncing 
   } = useContacts();
   
-  const { 
-    alerts, 
-    clearAlert, 
-    isConnected 
+  const {
+    alerts,
+    clearAlert,
   } = useScamAlerts();
 
   const [filteredContacts, setFilteredContacts] = useState(contacts);
@@ -44,8 +43,18 @@ const Dialer = () => {
     }
   }, [searchQuery, contacts, searchContacts]);
 
+  // Poll backend health every 5 s until connected, then every 30 s to detect drops
   useEffect(() => {
-    checkBackendHealth().then(setBackendConnected);
+    let cancelled = false;
+    const poll = async () => {
+      const ok = await checkBackendHealth();
+      if (!cancelled) setBackendConnected(ok);
+      if (!cancelled) {
+        setTimeout(poll, ok ? 30_000 : 5_000);
+      }
+    };
+    poll();
+    return () => { cancelled = true; };
   }, []);
 
   const handleDigitClick = (digit: string) => {
@@ -65,14 +74,17 @@ const Dialer = () => {
       navigate("/auth");
       return;
     }
-    if (backendConnected) {
+    // Always do a fresh check right before the call
+    const isOnline = await checkBackendHealth();
+    setBackendConnected(isOnline);
+    if (isOnline) {
       try {
         await initiateCall({ userId: user.id, phoneNumber });
       } catch {
-        toast("Backend offline, starting local demo call");
+        toast("Could not reach backend – starting demo call");
       }
     } else {
-      toast("Backend offline, starting local demo call");
+      toast("Backend offline – starting demo call");
     }
     navigate(`/call?number=${phoneNumber}`);
   };
@@ -119,7 +131,7 @@ const Dialer = () => {
           >
             <User className="h-5 w-5" />
           </Button>
-          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-alert-safe' : 'bg-alert-critical'}`} />
+          <div className={`w-2 h-2 rounded-full ${backendConnected ? 'bg-alert-safe' : 'bg-alert-critical'}`} />
           {backendConnected === false && (
             <span className="text-xs text-muted-foreground ml-1">Backend offline</span>
           )}

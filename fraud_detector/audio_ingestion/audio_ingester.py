@@ -1,6 +1,30 @@
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 import os
+import shutil
+
+# Locate ffmpeg: first check for a local folder in the project root,
+# then fall back to the system PATH (e.g. installed via winget/brew/apt).
+_project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+_ffmpeg_bin = None
+
+for _entry in os.listdir(_project_root):
+    _candidate = os.path.join(_project_root, _entry, 'bin', 'ffmpeg.exe')
+    if _entry.lower().startswith('ffmpeg') and os.path.isfile(_candidate):
+        _ffmpeg_bin = os.path.join(_project_root, _entry, 'bin')
+        break
+
+if _ffmpeg_bin:
+    AudioSegment.converter = os.path.join(_ffmpeg_bin, 'ffmpeg.exe')
+    AudioSegment.ffmpeg = os.path.join(_ffmpeg_bin, 'ffmpeg.exe')
+    AudioSegment.ffprobe = os.path.join(_ffmpeg_bin, 'ffprobe.exe')
+    print(f"✓ ffmpeg located at: {_ffmpeg_bin}")
+else:
+    _system_ffmpeg = shutil.which('ffmpeg')
+    if _system_ffmpeg:
+        print(f"✓ ffmpeg found on system PATH: {_system_ffmpeg}")
+    else:
+        print("⚠ ffmpeg not found — audio processing may fail.")
 
 class AudioIngester:
     """

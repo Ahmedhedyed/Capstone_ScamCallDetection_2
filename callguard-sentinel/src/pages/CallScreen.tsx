@@ -37,7 +37,7 @@ const CallScreen = () => {
   const [durationTimer, setDurationTimer] = useState<NodeJS.Timeout | null>(null);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<Record<string, unknown> | null>(null);
   const [recordingPromise, setRecordingPromise] = useState<Promise<Blob> | null>(null);
   
   // Hooks
