@@ -25,6 +25,17 @@ pandas>=1.5.0
 joblib>=1.3.0
 matplotlib>=3.6.0
 
+# --- TinyBERT (replaces Random Forest) ---
+torch>=2.0.0
+transformers>=4.36.0
+numpy>=1.24.0
+
+# --- TFLite export for mobile (run export_tinybert_tflite.py) ---
+# optimum[exporters]>=1.16.0
+# onnx>=1.14.0
+# onnx-tf>=1.10.0
+# tensorflow>=2.13.0
+
 # For real-time processing
 # threading, queue, time, datetime are built-in Python modules
 

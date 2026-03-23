@@ -59,13 +59,15 @@ print("✓ AI model initialization complete.")
 @app.get("/health")
 async def health_check():
     """Simple health check endpoint for the frontend to confirm the backend is live."""
+    model_status = INITIAL_MODEL.status() if INITIAL_MODEL else {}
     return {
         "status": "ok",
         "models": {
-            "transcriber": TRANSCRIBER is not None,
+            "transcriber":    TRANSCRIBER is not None,
             "text_extractor": TEXT_EXTRACTOR is not None,
-            "master_model": INITIAL_MODEL is not None,
-            "llm_verifier": LLM_VERIFIER is not None,
+            "master_model":   INITIAL_MODEL is not None,
+            "llm_verifier":   LLM_VERIFIER is not None,
+            "tinybert":       model_status.get("tinybert", {}),
         }
     }
 
@@ -95,9 +97,10 @@ async def perform_full_analysis_optimized(file_path: str) -> dict:
     full_english_transcription = transcription_result["full_text"]
     print("Transcription complete.")
 
-    # Lexical Analysis
+    # Lexical Analysis (still used for rule-based override layer and explainability)
     textual_features = TEXT_EXTRACTOR.extract_features(full_english_transcription)
-    preliminary_result = INITIAL_MODEL.predict(textual_features, {})
+    # Pass raw_text so TinyBERT can score the full transcript semantically
+    preliminary_result = INITIAL_MODEL.predict(textual_features, {}, raw_text=full_english_transcription)
     preliminary_score = preliminary_result['fraud_score']
 
     # LLM Verification (if needed)
@@ -172,7 +175,8 @@ async def run_fraud_analysis_with_updates(job_id: str, file_path: str):
 
         await manager.send_json(job_id, {"status": "analyzing", "message": "Transcription complete. Analyzing text..."})
         textual_features = TEXT_EXTRACTOR.extract_features(full_english_transcription)
-        preliminary_result = INITIAL_MODEL.predict(textual_features, {})
+        # Pass raw_text so TinyBERT can score semantically
+        preliminary_result = INITIAL_MODEL.predict(textual_features, {}, raw_text=full_english_transcription)
         preliminary_score = preliminary_result['fraud_score']
         await manager.send_json(job_id, {"status": "analyzing", "step": "preliminary_analysis", "message": f"Preliminary score: {preliminary_score:.2f}", "data": preliminary_result})
 
